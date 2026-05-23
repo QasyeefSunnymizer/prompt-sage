@@ -14,6 +14,12 @@ pub struct SageState {
     pub level: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelfUpdatePlan {
+    pub manager: String,
+    pub commands: Vec<String>,
+}
+
 impl Default for SageState {
     fn default() -> Self {
         Self {
@@ -67,12 +73,69 @@ pub fn transform_text(text: &str, level: &str) -> TransformResult {
         };
     }
 
-    let compact = compact_sentence(&strip_noise(text), level);
-    let yoda = yoda_transform(&compact, level);
+    let yoda = preserve_code_blocks(text, |chunk| {
+        let compact = compact_sentence(&strip_noise(chunk), level);
+        yoda_transform(&compact, level)
+    });
     TransformResult {
         mode_applied: level.to_string(),
-        text: yoda,
+        text: yoda.trim().to_string(),
     }
+}
+
+pub fn self_update_plan_for(
+    platform: &str,
+    has_cmd: impl Fn(&str) -> bool,
+) -> Result<SelfUpdatePlan, String> {
+    if platform == "windows" {
+        if has_cmd("winget") {
+            return Ok(SelfUpdatePlan {
+                manager: "winget".to_string(),
+                commands: vec!["winget upgrade prompt-sage".to_string()],
+            });
+        }
+        if has_cmd("choco") {
+            return Ok(SelfUpdatePlan {
+                manager: "choco".to_string(),
+                commands: vec!["choco upgrade prompt-sage -y".to_string()],
+            });
+        }
+        return Err("No supported Windows package manager found (winget/choco).".to_string());
+    }
+
+    if platform == "macos" {
+        if has_cmd("brew") {
+            return Ok(SelfUpdatePlan {
+                manager: "brew".to_string(),
+                commands: vec![
+                    "brew update".to_string(),
+                    "brew upgrade prompt-sage".to_string(),
+                ],
+            });
+        }
+        return Err("Homebrew is required for self-update on macOS.".to_string());
+    }
+
+    if platform == "linux" {
+        if has_cmd("apt") {
+            return Ok(SelfUpdatePlan {
+                manager: "apt".to_string(),
+                commands: vec![
+                    "sudo apt update".to_string(),
+                    "sudo apt install --only-upgrade -y prompt-sage".to_string(),
+                ],
+            });
+        }
+        if has_cmd("dnf") {
+            return Ok(SelfUpdatePlan {
+                manager: "dnf".to_string(),
+                commands: vec!["sudo dnf upgrade -y prompt-sage".to_string()],
+            });
+        }
+        return Err("No supported Linux package manager found (apt/dnf).".to_string());
+    }
+
+    Err(format!("Unsupported platform '{}'.", platform))
 }
 
 pub fn should_fallback_plain(text: &str) -> bool {
@@ -130,6 +193,28 @@ fn yoda_transform(text: &str, level: &str) -> String {
     text.to_string()
 }
 
+fn preserve_code_blocks(text: &str, transform: impl Fn(&str) -> String) -> String {
+    let mut out: Vec<String> = Vec::new();
+    let mut in_code = false;
+    let mut part = String::new();
+
+    for segment in text.split("```") {
+        if in_code {
+            out.push(format!("```{}```", segment));
+        } else {
+            out.push(transform(segment));
+        }
+        in_code = !in_code;
+        part.clear();
+    }
+
+    if !part.is_empty() {
+        out.push(part);
+    }
+
+    out.join("")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,5 +232,19 @@ mod tests {
     fn safety_fallback_still_triggers() {
         let out = transform_text("Delete users now.", "roleplay");
         assert_eq!(out.mode_applied, "plain-safety");
+    }
+
+    #[test]
+    fn preserves_code_blocks() {
+        let input = "Config is wrong. ```js\nconst token = process.env.TOKEN;\n```";
+        let out = transform_text(input, "full");
+        assert!(out.text.contains("```js\nconst token = process.env.TOKEN;\n```"));
+    }
+
+    #[test]
+    fn builds_update_plan_for_linux_apt() {
+        let plan = self_update_plan_for("linux", |cmd| cmd == "apt").unwrap();
+        assert_eq!(plan.manager, "apt");
+        assert!(plan.commands[0].contains("apt update"));
     }
 }

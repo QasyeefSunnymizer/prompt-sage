@@ -1,5 +1,6 @@
 use clap::Parser;
-use prompt_sage_rs::{parse_command, transform_text, SageState};
+use prompt_sage_rs::{parse_command, self_update_plan_for, transform_text, SageState};
+use std::process::Command;
 
 #[derive(Parser, Debug)]
 #[command(name = "prompt-sage-rs")]
@@ -24,12 +25,51 @@ fn main() {
 
     let command = cli.command.unwrap();
     if command.to_lowercase() == "self-update" {
-        // Phase-1 scaffold: command wiring only. Platform-specific updater lands next.
+        let platform = std::env::consts::OS;
+        let has_cmd = |cmd: &str| {
+            Command::new(cmd)
+                .arg("--version")
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false)
+        };
+        let plan = match self_update_plan_for(platform, has_cmd) {
+            Ok(p) => p,
+            Err(err) => {
+                eprintln!("{}", err);
+                std::process::exit(1);
+            }
+        };
+
         if cli.dry_run {
-            println!("self-update dry-run: platform updater wiring pending (phase 2)");
-        } else {
-            println!("self-update: platform updater wiring pending (phase 2)");
+            println!(
+                "Detected {}. Would run: {}",
+                plan.manager,
+                plan.commands.join(" && ")
+            );
+            return;
         }
+
+        for cmd in &plan.commands {
+            let status = if cfg!(target_os = "windows") {
+                Command::new("cmd").args(["/C", cmd]).status()
+            } else {
+                Command::new("sh").args(["-lc", cmd]).status()
+            };
+
+            match status {
+                Ok(s) if s.success() => {}
+                Ok(s) => {
+                    eprintln!("Command failed with status {}: {}", s, cmd);
+                    std::process::exit(1);
+                }
+                Err(e) => {
+                    eprintln!("Failed to execute '{}': {}", cmd, e);
+                    std::process::exit(1);
+                }
+            }
+        }
+        println!("prompt-sage updated via {}.", plan.manager);
         return;
     }
 

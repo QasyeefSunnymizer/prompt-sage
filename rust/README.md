@@ -5,13 +5,13 @@ This folder contains phase-1 scaffolding for a Rust migration of `prompt-sage`.
 ## Current Status
 - CLI entrypoint with command-shape parity:
   - `"/sage [lite|full|ultra|master|roleplay]" "text"`
-  - `self-update [--dry-run]` (wiring placeholder)
+  - `self-update [--dry-run]`
 - Basic mode parser/state and transform pipeline.
 - Safety fallback behavior carried over.
-- Unit tests for parser and safety fallback.
+- Unit tests for parser, safety fallback, and code-block preservation.
+- Fixture-based parity mode checks in `tests/parity.rs`.
 
-## Phase-2 Targets
-- Implement platform-specific `self-update` execution parity.
-- Add robust literal preservation parity (code-block protection).
-- Expand snapshot fixtures for output-compatibility checks against JS version.
-- Package Rust binary for existing distribution channels.
+## Next Targets
+- Expand snapshot fixtures for output text compatibility against JS behavior.
+- Add tokenizer-based token-savings benchmarking for Rust outputs.
+- Move package manager installers to consume Rust binaries progressively.

@@ -19,6 +19,7 @@ coverage/
 .cache/
 tmp/
 temp/
+rust/prompt-sage-rs/target/
 
 # OS/editor noise
 .DS_Store

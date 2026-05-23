@@ -1,6 +1,6 @@
 {
   "name": "prompt-sage",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Prompt Sage, token-efficient communication mode for coding agents.",
   "main": "src/index.js",
   "scripts": {

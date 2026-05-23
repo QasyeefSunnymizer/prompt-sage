@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  validate-and-source:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -52,10 +52,72 @@ jobs:
           cd dist
           sha256sum "prompt-sage-${GITHUB_REF_NAME}.tar.gz" > "prompt-sage-${GITHUB_REF_NAME}.tar.gz.sha256"
 
+      - name: Upload source artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-source
+          path: |
+            dist/prompt-sage-${{ github.ref_name }}.tar.gz
+            dist/prompt-sage-${{ github.ref_name }}.tar.gz.sha256
+
+  rust-binaries:
+    needs: validate-and-source
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            bin: prompt-sage-rs
+            out: prompt-sage-rs-linux-x64
+          - os: macos-latest
+            bin: prompt-sage-rs
+            out: prompt-sage-rs-macos-x64
+          - os: windows-latest
+            bin: prompt-sage-rs.exe
+            out: prompt-sage-rs-windows-x64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust binary
+        shell: bash
+        run: cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml
+
+      - name: Package Rust binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "rust/prompt-sage-rs/target/release/${{ matrix.bin }}" "dist/${{ matrix.out }}"
+
+      - name: Upload Rust artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-${{ matrix.out }}
+          path: dist/${{ matrix.out }}
+
+  publish-release:
+    needs: [validate-and-source, rust-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-source
+          path: dist
+
+      - name: Download Rust artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rust-*
+          merge-multiple: true
+          path: dist
+
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            dist/prompt-sage-${{ github.ref_name }}.tar.gz
-            dist/prompt-sage-${{ github.ref_name }}.tar.gz.sha256
+          files: dist/*
