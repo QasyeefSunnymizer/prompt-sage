@@ -18,7 +18,7 @@ class SageMode {
     if (arg && LEVELS.has(arg)) {
       this.level = arg;
     } else if (arg) {
-      return { type: "error", error: `Unknown level '${arg}'. Use lite|full|ultra|master.` };
+      return { type: "error", error: `Unknown level '${arg}'. Use lite|full|ultra|master|roleplay.` };
     }
     this.active = true;
     return { type: "start", active: this.active, level: this.level };
@@ -33,4 +33,3 @@ class SageMode {
 module.exports = {
   SageMode,
 };
-

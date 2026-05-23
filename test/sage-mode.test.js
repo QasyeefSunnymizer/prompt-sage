@@ -6,12 +6,12 @@ const { SageMode, transformText } = require("../src");
 
 test("parses start/stop commands and persists level", () => {
   const mode = new SageMode();
-  let res = mode.parseCommand("/sage master");
+  let res = mode.parseCommand("/sage roleplay");
   assert.equal(res.type, "start");
-  assert.equal(res.level, "master");
+  assert.equal(res.level, "roleplay");
 
-  const out = mode.respond("Your deployment is stable.");
-  assert.match(out.text, /Hmmm\./);
+  const out = mode.respond("Your deployment is too slow because it opens a new database connection for every request.");
+  assert.match(out.text, /Hmm\./);
 
   res = mode.parseCommand("stop sage");
   assert.equal(res.type, "stop");

@@ -3,7 +3,7 @@ const { transformText } = require("./style-engine");
 
 const DEFAULT_ENCODING = "o200k_base";
 const TOKENIZER_MODEL = "gpt-4o";
-const LEVELS = ["lite", "full", "ultra", "master"];
+const LEVELS = ["lite", "full", "ultra", "master", "roleplay"];
 
 function getEncoder(encodingName = DEFAULT_ENCODING) {
   if (encodingName === DEFAULT_ENCODING) {

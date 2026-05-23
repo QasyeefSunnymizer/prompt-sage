@@ -5,7 +5,7 @@ const mode = new SageMode();
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd) {
-  console.log("Usage: node src/cli.js \"/sage [lite|full|ultra|master]\" \"text\"");
+  console.log("Usage: node src/cli.js \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
   process.exit(0);
 }
 
@@ -23,4 +23,3 @@ if (!rest.length) {
 const input = rest.join(" ");
 const out = mode.respond(input);
 console.log(out.text);
-

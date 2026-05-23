@@ -46,7 +46,7 @@ bash install.sh
 | Action | Command |
 | --- | --- |
 | Enable default mode | `/sage` |
-| Enable specific mode | `/sage lite|full|ultra|master` |
+| Enable specific mode | `/sage lite|full|ultra|master|roleplay` |
 | Disable mode | `stop sage` |
 | Disable alias | `normal mode` |
 
@@ -55,9 +55,10 @@ bash install.sh
 | Mode | Compression | Readability | Notes |
 | --- | --- | --- | --- |
 | `lite` | Low | Highest | Minimal style shift |
-| `full` | Medium | High | Default balance |
+| `full` | Medium | High | Default, clearer Yoda cadence |
 | `ultra` | High | Medium | Shortest practical prose |
-| `master` | Highest | Medium-Low | Strongest stylization |
+| `master` | Highest | Medium-Low | Legacy heavy stylization |
+| `roleplay` | Highest | Medium-Low | Heavy stylization (explicit opt-in) |
 
 ![Hand-drawn compression ladder with 4 rungs](docs/images/mode-compression-ladder.png)
 
@@ -88,6 +89,12 @@ it opens a new database connection for every request, Your auth middleware is to
 
 ```text
 it opens a new DB connection for every req, Your auth middleware is too slow for.
+```
+
+`roleplay` output:
+
+```text
+too slow for it opens a new DB connection for every req, Your auth middleware is. Hmm.
 ```
 
 Safety fallback input:

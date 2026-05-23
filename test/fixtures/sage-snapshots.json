@@ -6,7 +6,8 @@
       "lite": "Your auth middleware is too slow because it opens a new database connection for every request.",
       "full": "too slow for it opens a new database connection for every request, Your auth middleware is.",
       "ultra": "too slow for it opens a new DB connection for every req, Your auth middleware is.",
-      "master": "too slow for it opens a new DB connection for every req, Your auth middleware is. Hmmm."
+      "master": "too slow for it opens a new DB connection for every req, Your auth middleware is. Hmm.",
+      "roleplay": "too slow for it opens a new DB connection for every req, Your auth middleware is. Hmm."
     }
   },
   {
@@ -15,4 +16,3 @@
     "expectedMode": "plain-safety"
   }
 ]
-

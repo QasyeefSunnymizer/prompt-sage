@@ -39,5 +39,6 @@ test("internal stats script prints required columns and all modes", () => {
   assert.match(output, /\bfull\b/);
   assert.match(output, /\bultra\b/);
   assert.match(output, /\bmaster\b/);
+  assert.match(output, /\broleplay\b/);
   assert.match(output, /Summary by mode/);
 });
