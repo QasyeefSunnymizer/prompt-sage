@@ -100,20 +100,16 @@ Result: `plain-safety` mode (no stylized inversion).
 
 ![Hand-drawn safety fallback decision diagram](docs/images/safety-fallback-flow.png)
 
-## Development
+## Release
 
-Contributors and local development:
+Release publishing is tag-driven.
 
-```powershell
-npm install
-npm test
-```
+1. Bump the version in `package.json` to the target `X.Y.Z`.
+2. Commit and push to `main`.
+3. Create the release tag: `git tag vX.Y.Z`
+4. Push the tag: `git push origin vX.Y.Z`
 
-Internal benchmark stats:
-
-```powershell
-npm run stats:sage:internal
-```
+The release workflow validates the tag/version match, runs tests, builds the source archive, generates SHA256, and publishes GitHub Release assets.
 
 ## Feedback
 

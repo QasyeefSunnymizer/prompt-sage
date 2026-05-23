@@ -2,7 +2,7 @@
 
 Describe what changed and why.
 
-## Checklist (Required)
+## Checklist (Recommended)
 
 - [ ] I reviewed my own diff line-by-line
 - [ ] I ran npm test locally
