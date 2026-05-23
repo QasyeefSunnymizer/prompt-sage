@@ -1,0 +1,4 @@
+docs/images/* linguist-detectable=false
+*.ps1 linguist-detectable=false
+*.sh linguist-detectable=false
+*.rb linguist-detectable=false

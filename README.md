@@ -47,6 +47,8 @@ bash install.sh
 | --- | --- |
 | Enable default mode | `/sage` |
 | Enable specific mode | `/sage lite|full|ultra|master|roleplay` |
+| Update to latest | `node src/cli.js self-update` |
+| Preview update command | `node src/cli.js self-update --dry-run` |
 | Disable mode | `stop sage` |
 | Disable alias | `normal mode` |
 
@@ -117,6 +119,28 @@ Release publishing is tag-driven.
 4. Push the tag: `git push origin vX.Y.Z`
 
 The release workflow validates the tag/version match, runs tests, builds the source archive, generates SHA256, and publishes GitHub Release assets.
+
+## Updating Existing Installs
+
+Preferred: use your package manager auto-update policy.
+
+- Windows (`winget`): `winget upgrade prompt-sage`
+- Windows (`choco`): `choco upgrade prompt-sage`
+- macOS (`brew`): `brew update && brew upgrade prompt-sage`
+- Debian/Ubuntu (`apt`): `sudo apt update && sudo apt install --only-upgrade prompt-sage`
+- Fedora/RHEL (`dnf`): `sudo dnf upgrade prompt-sage`
+
+Unified helper command:
+
+```bash
+node src/cli.js self-update
+```
+
+Dry run:
+
+```bash
+node src/cli.js self-update --dry-run
+```
 
 ## Feedback
 

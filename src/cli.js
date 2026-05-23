@@ -1,12 +1,30 @@
 #!/usr/bin/env node
 const { SageMode } = require("./sage-mode");
+const { runSelfUpdate } = require("./self-update");
 
 const mode = new SageMode();
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd) {
   console.log("Usage: node src/cli.js \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
+  console.log("       node src/cli.js self-update [--dry-run]");
   process.exit(0);
+}
+
+if (cmd.toLowerCase() === "self-update") {
+  const dryRun = rest.includes("--dry-run");
+  try {
+    const result = runSelfUpdate({ dryRun });
+    if (result.dryRun) {
+      console.log(`Detected ${result.manager}. Would run: ${result.command}`);
+    } else {
+      console.log(`prompt-sage updated via ${result.manager}.`);
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
 }
 
 const parsed = mode.parseCommand(cmd);
