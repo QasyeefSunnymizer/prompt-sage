@@ -1,0 +1,24 @@
+{
+  "name": "prompt-sage",
+  "version": "0.1.0",
+  "description": "Prompt Sage, token-efficient communication mode for coding agents.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test",
+    "sage": "node src/cli.js",
+    "demo:sage": "node scripts/demo-sage.js",
+    "stats:sage:internal": "node scripts/stats-sage.js"
+  },
+  "keywords": [
+    "sage",
+    "agent",
+    "prompting",
+    "token-efficiency"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "tiktoken": "^1.0.22"
+  }
+}

@@ -1,0 +1,13 @@
+PackageIdentifier: prompt-sage.prompt-sage
+PackageVersion: 0.1.0
+PackageName: prompt-sage
+Publisher: prompt-sage
+ShortDescription: Prompt Sage token-efficient mode for coding assistants.
+Installers:
+  - Architecture: x64
+    InstallerType: zip
+    InstallerUrl: https://example.com/prompt-sage/v0.1.0/prompt-sage-win-x64.zip
+    InstallerSha256: REPLACE_WITH_SHA256
+ManifestType: singleton
+ManifestVersion: 1.6.0
+

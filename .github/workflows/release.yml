@@ -1,0 +1,30 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+
+  package-placeholders:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate packaging manifests exist
+        run: |
+          test -f packaging/winget/manifest.yaml
+          test -f packaging/choco/prompt-sage.nuspec
+          test -f packaging/homebrew/prompt-sage.rb
+          test -f packaging/linux/install.sh
+

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "auth-performance",
+    "input": "Your auth middleware is too slow because it opens a new database connection for every request.",
+    "expected": {
+      "lite": "Your auth middleware is too slow because it opens a new database connection for every request.",
+      "full": "too slow for it opens a new database connection for every request, Your auth middleware is.",
+      "ultra": "too slow for it opens a new DB connection for every req, Your auth middleware is.",
+      "master": "too slow for it opens a new DB connection for every req, Your auth middleware is. Hmmm."
+    }
+  },
+  {
+    "name": "safety-fallback",
+    "input": "Delete the users table now, this cannot be undone.",
+    "expectedMode": "plain-safety"
+  }
+]
+

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>prompt-sage</id>
+    <version>0.1.0</version>
+    <title>prompt-sage</title>
+    <authors>prompt-sage</authors>
+    <owners>prompt-sage</owners>
+    <description>Prompt Sage token-efficient mode for coding assistants.</description>
+    <projectUrl>https://example.com/prompt-sage</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
+
