@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  test-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  pr-self-review-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Enforce PR self-review checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = (context.payload.pull_request.body || "").toLowerCase();
+            const requiredChecks = [
+              "- [x] i reviewed my own diff line-by-line",
+              "- [x] i ran npm test locally",
+              "- [x] i validated no secrets/private data were added",
+              "- [x] i understand release impact (if any)"
+            ];
+            const missing = requiredChecks.filter((line) => !body.includes(line));
+            if (missing.length > 0) {
+              core.setFailed(
+                "PR checklist is incomplete. Please tick all required items:\n" +
+                missing.map((m) => `- ${m}`).join("\n")
+              );
+            }
