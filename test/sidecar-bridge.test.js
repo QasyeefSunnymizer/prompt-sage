@@ -97,6 +97,34 @@ test("sidecar sidebar wrapping keeps long text readable", async () => {
   assert.match(lines.join(" "), /Improve documentation/);
 });
 
+test("sidecar wrapping constrains long unbroken words", async () => {
+  const cliUrl = pathToFileURL(path.join(__dirname, "..", "src", "sidecar", "cli.mjs"));
+  const { wrapText } = await import(cliUrl.href);
+
+  const lines = wrapText("Supercalifragilisticexpialidocious", 12, 2);
+
+  assert.ok(lines.every((line) => line.length <= 12));
+});
+
+test("sidecar text writer supports web writable stdin", async () => {
+  const cliUrl = pathToFileURL(path.join(__dirname, "..", "src", "sidecar", "cli.mjs"));
+  const { createTextWriter } = await import(cliUrl.href);
+  const chunks = [];
+  const stdin = {
+    getWriter() {
+      return {
+        write(chunk) {
+          chunks.push(Buffer.from(chunk).toString("utf8"));
+        },
+      };
+    },
+  };
+
+  createTextWriter(stdin)("hello");
+
+  assert.deepEqual(chunks, ["hello"]);
+});
+
 test("Windows command resolution prefers runnable npm cmd shim", () => {
   assert.equal(
     selectWindowsRunnable([
