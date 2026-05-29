@@ -47,8 +47,8 @@ bash install.sh
 | --- | --- |
 | Enable default mode | `/sage` |
 | Enable specific mode | `/sage lite|full|ultra|master|roleplay` |
-| Update to latest | `node src/cli.js self-update` |
-| Preview update command | `node src/cli.js self-update --dry-run` |
+| Update to latest | `prompt-sage self-update` |
+| Preview update command | `prompt-sage self-update --dry-run` |
 | Disable mode | `stop sage` |
 | Disable alias | `normal mode` |
 
@@ -133,13 +133,13 @@ Preferred: use your package manager auto-update policy.
 Unified helper command:
 
 ```bash
-node src/cli.js self-update
+prompt-sage self-update
 ```
 
 Dry run:
 
 ```bash
-node src/cli.js self-update --dry-run
+prompt-sage self-update --dry-run
 ```
 
 ## Feedback

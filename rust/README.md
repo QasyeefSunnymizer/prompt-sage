@@ -1,17 +1,20 @@
-# Rust Migration Scaffold
+# Rust CLI
 
-This folder contains phase-1 scaffolding for a Rust migration of `prompt-sage`.
+This folder contains the primary `prompt-sage` CLI implementation.
 
 ## Current Status
-- CLI entrypoint with command-shape parity:
+- CLI entrypoint:
   - `"/sage [lite|full|ultra|master|roleplay]" "text"`
   - `self-update [--dry-run]`
-- Basic mode parser/state and transform pipeline.
+- Mode parser/state and transform pipeline with JS snapshot parity.
 - Safety fallback behavior carried over.
-- Unit tests for parser, safety fallback, and code-block preservation.
-- Fixture-based parity mode checks in `tests/parity.rs`.
+- Unit tests for parser, safety fallback, code-block preservation, and CLI shape.
+- Fixture-based output parity checks in `tests/parity.rs`.
 
-## Next Targets
-- Expand snapshot fixtures for output text compatibility against JS behavior.
-- Add tokenizer-based token-savings benchmarking for Rust outputs.
-- Move package manager installers to consume Rust binaries progressively.
+## Build
+
+```bash
+cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml
+```
+
+The release binary is written to `rust/prompt-sage-rs/target/release/prompt-sage`.

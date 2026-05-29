@@ -25,11 +25,9 @@ case "$pm" in
     ;;
   fallback)
     echo "No apt/dnf found. Downloading release binary..."
-    curl -fsSL "https://example.com/prompt-sage/latest/prompt-sage-linux-x64.tar.gz" -o /tmp/prompt-sage.tar.gz
-    tar -xzf /tmp/prompt-sage.tar.gz -C /tmp
-    sudo install /tmp/prompt-sage /usr/local/bin/prompt-sage
+    curl -fsSL "https://example.com/prompt-sage/latest/prompt-sage-linux-x64" -o /tmp/prompt-sage
+    sudo install -m 0755 /tmp/prompt-sage /usr/local/bin/prompt-sage
     ;;
 esac
 
 echo "Installed prompt-sage"
-

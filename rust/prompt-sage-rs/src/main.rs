@@ -3,8 +3,8 @@ use prompt_sage_rs::{parse_command, self_update_plan_for, transform_text, SageSt
 use std::process::Command;
 
 #[derive(Parser, Debug)]
-#[command(name = "prompt-sage-rs")]
-#[command(about = "Rust scaffold for prompt-sage", long_about = None)]
+#[command(name = "prompt-sage")]
+#[command(about = "Prompt Sage CLI", long_about = None)]
 struct Cli {
     /// Mode command such as /sage, /sage roleplay, stop sage, self-update
     command: Option<String>,
@@ -27,8 +27,9 @@ fn main() {
     if command.to_lowercase() == "self-update" {
         let platform = std::env::consts::OS;
         let has_cmd = |cmd: &str| {
+            let probe_arg = if cmd == "choco" { "-v" } else { "--version" };
             Command::new(cmd)
-                .arg("--version")
+                .arg(probe_arg)
                 .output()
                 .map(|o| o.status.success())
                 .unwrap_or(false)
@@ -76,13 +77,31 @@ fn main() {
     let mut state = SageState::default();
     match parse_command(&mut state, &command) {
         Ok(kind) if kind == "none" => {
-            println!("{}", command);
-        }
-        Ok(_) => {
             if cli.text.is_empty() {
+                let parsed = serde_json::json!({
+                    "type": "none",
+                    "active": state.active,
+                    "level": state.level,
+                });
                 println!(
-                    "{{\"active\": {}, \"level\": \"{}\"}}",
-                    state.active, state.level
+                    "{}",
+                    serde_json::to_string_pretty(&parsed).expect("valid json")
+                );
+                return;
+            }
+
+            println!("{}", cli.text.join(" "));
+        }
+        Ok(kind) => {
+            if cli.text.is_empty() {
+                let parsed = serde_json::json!({
+                    "type": kind,
+                    "active": state.active,
+                    "level": state.level,
+                });
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&parsed).expect("valid json")
                 );
                 return;
             }
@@ -103,6 +122,6 @@ fn main() {
 
 fn print_usage() {
     println!("Usage:");
-    println!("  prompt-sage-rs \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
-    println!("  prompt-sage-rs self-update [--dry-run]");
+    println!("  prompt-sage \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
+    println!("  prompt-sage self-update [--dry-run]");
 }

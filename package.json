@@ -3,9 +3,14 @@
   "version": "0.2.1",
   "description": "Prompt Sage, token-efficient communication mode for coding agents.",
   "main": "src/index.js",
+  "bin": {
+    "prompt-sage": "src/cli.js"
+  },
   "scripts": {
-    "test": "node --test",
-    "sage": "node src/cli.js",
+    "build:rust": "cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml",
+    "test": "node --test && npm run test:rust",
+    "test:rust": "cargo test --manifest-path rust/prompt-sage-rs/Cargo.toml",
+    "sage": "cargo run --quiet --manifest-path rust/prompt-sage-rs/Cargo.toml --",
     "demo:sage": "node scripts/demo-sage.js",
     "stats:sage:internal": "node scripts/stats-sage.js"
   },

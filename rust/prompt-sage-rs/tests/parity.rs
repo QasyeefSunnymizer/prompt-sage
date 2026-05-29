@@ -4,6 +4,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 struct Fixture {
     input: String,
+    expected: Option<std::collections::HashMap<String, String>>,
     expected_mode: Option<std::collections::HashMap<String, String>>,
     expected_mode_only: Option<String>,
 }
@@ -15,6 +16,13 @@ fn matches_mode_expectations() {
     let fixtures: Vec<Fixture> = serde_json::from_str(&raw).expect("valid fixture json");
 
     for fixture in fixtures {
+        if let Some(expected) = fixture.expected {
+            for (level, expected_text) in expected {
+                let out = transform_text(&fixture.input, &level);
+                assert_eq!(out.text, expected_text, "level={}", level);
+            }
+        }
+
         if let Some(modes) = fixture.expected_mode {
             for (level, expected_mode) in modes {
                 let out = transform_text(&fixture.input, &level);

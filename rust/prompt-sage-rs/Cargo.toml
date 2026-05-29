@@ -3,7 +3,11 @@ name = "prompt-sage-rs"
 version = "0.2.1"
 edition = "2021"
 license = "MIT"
-description = "Rust migration scaffold for prompt-sage CLI"
+description = "Prompt Sage token-efficient CLI"
+
+[[bin]]
+name = "prompt-sage"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }

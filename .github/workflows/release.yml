@@ -24,6 +24,9 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Validate tag matches package version
         shell: bash
         run: |
@@ -67,14 +70,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            bin: prompt-sage-rs
-            out: prompt-sage-rs-linux-x64
+            bin: prompt-sage
+            out: prompt-sage-linux-x64
           - os: macos-latest
-            bin: prompt-sage-rs
-            out: prompt-sage-rs-macos-x64
+            bin: prompt-sage
+            out: prompt-sage-macos-x64
           - os: windows-latest
-            bin: prompt-sage-rs.exe
-            out: prompt-sage-rs-windows-x64.exe
+            bin: prompt-sage.exe
+            out: prompt-sage-windows-x64.exe
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout

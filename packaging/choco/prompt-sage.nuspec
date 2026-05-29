@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>prompt-sage</id>
-    <version>0.1.0</version>
+    <version>0.2.1</version>
     <title>prompt-sage</title>
     <authors>prompt-sage</authors>
     <owners>prompt-sage</owners>
@@ -14,4 +14,3 @@
     <file src="tools\**" target="tools" />
   </files>
 </package>
-

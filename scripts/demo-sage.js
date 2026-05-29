@@ -1,7 +1,7 @@
 const { transformText } = require("../src");
 const samples = require("./sage-samples");
 
-const levels = ["lite", "full", "ultra", "master"];
+const levels = ["lite", "full", "ultra", "master", "roleplay"];
 
 for (const text of samples) {
   console.log("INPUT:", text);

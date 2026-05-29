@@ -1,13 +1,41 @@
 #!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { SageMode } = require("./sage-mode");
 const { runSelfUpdate } = require("./self-update");
+
+function candidateRustBins() {
+  const exe = process.platform === "win32" ? ".exe" : "";
+  return [
+    process.env.PROMPT_SAGE_BIN,
+    path.join(__dirname, "..", "rust", "prompt-sage-rs", "target", "release", `prompt-sage${exe}`),
+    path.join(__dirname, "..", "rust", "prompt-sage-rs", "target", "debug", `prompt-sage${exe}`),
+    path.join(__dirname, "..", "bin", `prompt-sage${exe}`),
+  ].filter(Boolean);
+}
+
+function runRustCliIfAvailable(args) {
+  if (process.env.PROMPT_SAGE_JS_FALLBACK === "1") return false;
+
+  for (const bin of candidateRustBins()) {
+    if (!fs.existsSync(bin)) continue;
+    const result = spawnSync(bin, args, { stdio: "inherit" });
+    if (result.error) continue;
+    process.exit(result.status ?? 1);
+  }
+
+  return false;
+}
+
+runRustCliIfAvailable(process.argv.slice(2));
 
 const mode = new SageMode();
 const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd) {
-  console.log("Usage: node src/cli.js \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
-  console.log("       node src/cli.js self-update [--dry-run]");
+  console.log("Usage: prompt-sage \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
+  console.log("       prompt-sage self-update [--dry-run]");
   process.exit(0);
 }
 
