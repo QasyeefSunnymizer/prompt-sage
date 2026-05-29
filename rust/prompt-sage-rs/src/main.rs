@@ -74,6 +74,26 @@ fn main() {
         return;
     }
 
+    if command.to_lowercase() == "sidecar" {
+        if cli.text.is_empty() {
+            println!("Usage: prompt-sage sidecar <claude|codex|command> [args...]");
+            return;
+        }
+
+        let sidecar = find_sidecar_script();
+        let status = match Command::new("bun").arg(sidecar).args(&cli.text).status() {
+            Ok(status) => status,
+            Err(err) => {
+                eprintln!(
+                    "prompt-sage sidecar requires Bun and the JS sidecar files: {}",
+                    err
+                );
+                std::process::exit(1);
+            }
+        };
+        std::process::exit(status.code().unwrap_or(1));
+    }
+
     let mut state = SageState::default();
     match parse_command(&mut state, &command) {
         Ok(kind) if kind == "none" => {
@@ -123,5 +143,36 @@ fn main() {
 fn print_usage() {
     println!("Usage:");
     println!("  prompt-sage \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
+    println!("  prompt-sage sidecar <claude|codex|command> [args...]");
     println!("  prompt-sage self-update [--dry-run]");
+}
+
+fn find_sidecar_script() -> std::path::PathBuf {
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+    let cwd = std::env::current_dir().ok();
+
+    let mut candidates = Vec::new();
+    if let Some(dir) = exe_dir {
+        candidates.push(dir.join("src").join("sidecar").join("cli.mjs"));
+        candidates.push(dir.join("..").join("src").join("sidecar").join("cli.mjs"));
+        candidates.push(
+            dir.join("..")
+                .join("..")
+                .join("..")
+                .join("..")
+                .join("src")
+                .join("sidecar")
+                .join("cli.mjs"),
+        );
+    }
+    if let Some(dir) = cwd {
+        candidates.push(dir.join("src").join("sidecar").join("cli.mjs"));
+    }
+
+    candidates
+        .into_iter()
+        .find(|path| path.exists())
+        .unwrap_or_else(|| std::path::PathBuf::from("src/sidecar/cli.mjs"))
 }

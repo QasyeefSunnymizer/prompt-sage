@@ -19,6 +19,7 @@ coverage/
 .cache/
 tmp/
 temp/
+graphify-out/
 rust/prompt-sage-rs/target/
 
 # OS/editor noise

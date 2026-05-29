@@ -35,8 +35,19 @@ const [cmd, ...rest] = process.argv.slice(2);
 
 if (!cmd) {
   console.log("Usage: prompt-sage \"/sage [lite|full|ultra|master|roleplay]\" \"text\"");
+  console.log("       prompt-sage sidecar <claude|codex|command> [args...]");
   console.log("       prompt-sage self-update [--dry-run]");
   process.exit(0);
+}
+
+if (cmd.toLowerCase() === "sidecar") {
+  const sidecar = path.join(__dirname, "sidecar", "cli.mjs");
+  const result = spawnSync("bun", [sidecar, ...rest], { stdio: "inherit" });
+  if (result.error) {
+    console.error("prompt-sage sidecar requires Bun. Install Bun, then rerun the command.");
+    process.exit(1);
+  }
+  process.exit(result.status ?? 1);
 }
 
 if (cmd.toLowerCase() === "self-update") {

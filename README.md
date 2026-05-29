@@ -47,6 +47,8 @@ bash install.sh
 | --- | --- |
 | Enable default mode | `/sage` |
 | Enable specific mode | `/sage lite|full|ultra|master|roleplay` |
+| Run Claude beside Prompt Sage | `prompt-sage sidecar claude` |
+| Run Codex beside Prompt Sage | `prompt-sage sidecar codex` |
 | Update to latest | `prompt-sage self-update` |
 | Preview update command | `prompt-sage self-update --dry-run` |
 | Disable mode | `stop sage` |
@@ -72,6 +74,20 @@ bash install.sh
 | Code blocks | Never rewritten |
 | Risky instructions | Fallback to plain-safe mode |
 | Security-sensitive phrasing | Fallback to plain-safe mode |
+
+## Prompt Sage Sidecar
+
+`prompt-sage sidecar <claude|codex|command>` launches the target CLI in an interactive PTY and mirrors the terminal stream into Prompt Sage. V1 is observe-only: it detects vague prompts, repeated failures, risky commands, and verification gaps without injecting commands.
+
+The sidecar uses Bun for orchestration and owns the terminal with a Blessed split UI. The hosted CLI runs in the left terminal viewport, rendered through `xterm-headless`; Prompt Sage stays docked in the right sidebar. Linux and macOS use Bun native PTY support where available; Windows uses a Node ConPTY bridge powered by `@homebridge/node-pty-prebuilt-multiarch`, so hosted CLIs such as Codex stay interactive. Pipe mode is only a last-resort noninteractive fallback when no PTY backend can start.
+
+Set `PROMPT_SAGE_NO_UI=1` to disable the split wrapper and run the raw passthrough sidecar for debugging. When an optimized prompt is available, `Ctrl+]` copies it through OSC 52 where the terminal supports clipboard writes.
+
+Troubleshooting local sidecar installs:
+
+- Run `npm install` so the Node PTY bridge dependency is present.
+- Verify `node --version` resolves to your local Node install.
+- After local source changes, rerun `npm link` and `npm run build:rust` if your shell is using the linked Rust CLI.
 
 ## Example
 
