@@ -1,0 +1,71 @@
+[
+  {
+    "id": "refactor-hot-loop",
+    "mode": "Refactor",
+    "prompt": "Refactor this Python function used in a hot path. It builds many temp dicts and repeatedly lowercases keys in a loop. Improve clarity and performance without changing behavior.",
+    "criteria": [
+      "identifies algorithmic or layout issues before micro-optimizations",
+      "calls out allocation churn or hidden copies",
+      "preserves readability and behavior invariants",
+      "proposes measurable validation approach",
+      "mentions rollback/safety or risk containment"
+    ],
+    "anti": [
+      "jumps straight to bit tricks",
+      "claims compiler/runtime will optimize everything",
+      "style-only feedback"
+    ]
+  },
+  {
+    "id": "pipeline-safe-deploy",
+    "mode": "Pipeline",
+    "prompt": "Design CI/CD for Terraform + app deploy across dev/stage/prod with fast release flow and low outage risk.",
+    "criteria": [
+      "uses small batches and fast feedback",
+      "defines promotion gates and rollback strategy",
+      "covers infra drift/state locking/secrets",
+      "names key failure modes and detection",
+      "balances speed vs reliability trade-off"
+    ],
+    "anti": [
+      "single-step prod deploy without gates",
+      "ignores state locking",
+      "no rollback path"
+    ]
+  },
+  {
+    "id": "deepdive-idempotency",
+    "mode": "DeepDive",
+    "prompt": "Deep dive: idempotent job processing with at-least-once delivery and out-of-order events.",
+    "criteria": [
+      "states consistency/ordering trade-offs",
+      "defines idempotency key strategy",
+      "addresses replay and duplicate handling",
+      "specifies observability/metrics",
+      "explains failure recovery path"
+    ],
+    "anti": [
+      "assumes exactly-once",
+      "ignores ordering ambiguity",
+      "no operational metrics"
+    ]
+  },
+  {
+    "id": "skill-memory-transfer",
+    "mode": "SkillMemory",
+    "prompt": "An agent workflow adds a broad reusable skill and a long-lived project memory after one successful task. A later task in a different domain starts following the old procedure, retrieves stale context, and gives confident but wrong advice. Evaluate whether these skill and memory changes are actually improvements.",
+    "criteria": [
+      "judges skill and memory changes by downstream task utility",
+      "checks for negative transfer across domains, models, or target agents",
+      "requires provenance for memory and skill entries",
+      "identifies stale memory, retrieval mismatch, or context pollution",
+      "defines pressure-test or benchmark evidence plus rollback/repair path"
+    ],
+    "anti": [
+      "assumes more memory or more skill text is always better",
+      "judges skill quality by polish or completeness only",
+      "ignores stale or misretrieved context",
+      "no way to remove or repair bad memory"
+    ]
+  }
+]

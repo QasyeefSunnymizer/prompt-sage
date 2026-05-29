@@ -1,0 +1,38 @@
+{
+  "refactor-hot-loop": {
+    "response": "Start with invariants and behavior locks, then profile hot path. Focus first on algorithm/layout before micro-optimizations: avoid repeated lowercase transforms, reduce temporary objects/allocation churn and hidden copies, and preserve readability. Validate with before/after benchmark and keep rollback-safe change scope with low blast radius.",
+    "artifacts": {
+      "code_diff": {"files_changed": 3, "complexity_delta": -1, "hot_path_churn": 0.62, "allocation_sensitive_edits": 3},
+      "tests": {"changed_tests": 2, "pass": true, "coverage_delta": 0.02},
+      "perf": {"baseline": 118.2, "after": 89.7, "workload": "hot-loop replay 1M rows"},
+      "rollback": {"plan": "flip feature flag + revert patch", "blast_radius": "parser module only"}
+    }
+  },
+  "pipeline-safe-deploy": {
+    "response": "Design small-batch CI/CD with fast feedback: lint/test/plan gates in dev, promotion gates for stage/prod, and explicit rollback strategy (artifact + infra version rollback). Protect Terraform with remote state locking, drift detection, and secrets hygiene. Track failure modes (failed migrations, partial apply, unhealthy canary) with alerts. Trade-off speed vs reliability by defaulting progressive rollout.",
+    "artifacts": {
+      "code_diff": {"files_changed": 5, "complexity_delta": 0, "hot_path_churn": 0.15, "allocation_sensitive_edits": 0},
+      "tests": {"changed_tests": 3, "pass": true, "coverage_delta": 0.01},
+      "perf": {"baseline": 23.6, "after": 20.9, "workload": "staging canary deployment"},
+      "rollback": {"plan": "restore prior infra state and app artifact", "blast_radius": "single service + tf workspace"}
+    }
+  },
+  "deepdive-idempotency": {
+    "response": "State trade-off: at-least-once with out-of-order means duplicates and ordering ambiguity must be explicit. Use idempotency keys + dedup store, replay-safe handlers, and duplicate suppression windows. Define consistency vs latency trade-off for ordering guarantees. Add observability metrics (duplicate rate, retry count, processing latency, DLQ depth) and failure recovery path with retry/backoff + dead-letter + replay tooling.",
+    "artifacts": {
+      "code_diff": {"files_changed": 6, "complexity_delta": 1, "hot_path_churn": 0.34, "allocation_sensitive_edits": 1},
+      "tests": {"changed_tests": 4, "pass": true, "coverage_delta": 0.03},
+      "perf": {"baseline": 2490, "after": 2080, "workload": "duplicate-heavy at-least-once stream"},
+      "rollback": {"plan": "disable idempotency key gate + replay from snapshot", "blast_radius": "consumer workers only"}
+    }
+  },
+  "skill-memory-transfer": {
+    "response": "Treat the new skill and memory as behavior changes, not harmless context. Keep only entries with provenance, then test downstream task utility across the original task and different-domain tasks to catch negative transfer, extractor/consumer mismatch, stale memory, retrieval mismatch, and context pollution. Acceptance is not polish or length; it is improved benchmark/pressure-test results without anti-signals. Roll back or repair bad memory/skill entries by removing the scoped entry, invalidating stale retrieval, and rerunning the affected cases.",
+    "artifacts": {
+      "code_diff": {"files_changed": 4, "complexity_delta": 0, "hot_path_churn": 0.0, "allocation_sensitive_edits": 0},
+      "tests": {"changed_tests": 1, "pass": true, "coverage_delta": 0.01},
+      "perf": {"baseline": 3, "after": 4, "workload": "phase2 scenario pass count"},
+      "rollback": {"plan": "remove or narrow bad skill/memory entry and rerun transfer cases", "blast_radius": "agent skill and project memory scope"}
+    }
+  }
+}

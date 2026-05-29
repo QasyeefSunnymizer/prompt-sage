@@ -1,0 +1,14 @@
+{
+  "refactor-hot-loop": {
+    "response": "I would clean function names, split into helper methods, and improve readability. Then maybe optimize later if needed.",
+    "artifacts": {}
+  },
+  "pipeline-safe-deploy": {
+    "response": "Use GitHub Actions to plan and apply Terraform, then deploy app to production. Keep it simple and automate as much as possible.",
+    "artifacts": {}
+  },
+  "deepdive-idempotency": {
+    "response": "Use retries and ensure jobs are processed exactly-once with queue acknowledgements. Log errors for debugging.",
+    "artifacts": {}
+  }
+}
