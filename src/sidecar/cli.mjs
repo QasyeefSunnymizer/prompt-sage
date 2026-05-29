@@ -14,11 +14,7 @@ function usage() {
 }
 
 function resolveCommand(argv) {
-  const [target, ...rest] = argv;
-  if (!target) return null;
-  if (target === "claude") return ["claude", ...rest];
-  if (target === "codex") return ["codex", ...rest];
-  return [target, ...rest];
+  return argv.length ? argv : null;
 }
 
 function fit(text, width) {
