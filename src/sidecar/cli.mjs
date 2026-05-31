@@ -5,12 +5,12 @@ import process from "node:process";
 const require = createRequire(import.meta.url);
 const { ShadowMindAnalyzer } = require("./analyzer.js");
 const { createLineDecoder, encodeFrame } = require("./bridge-protocol.js");
+const terminalUi = require("../terminal-ui.js");
 const NODE_PTY_BRIDGE = require.resolve("./pty-node-bridge.cjs");
 const blessed = require("blessed");
 
 function usage() {
-  console.log("Usage: prompt-sage sidecar <claude|codex|command> [args...]");
-  console.log("Runs the target CLI in a PTY and mirrors the stream into Prompt Sage.");
+  console.log(terminalUi.sidecarUsage());
 }
 
 function resolveCommand(argv) {
@@ -188,7 +188,8 @@ function createBlessedSplitUi(snapshotRef) {
       ? `${snap.insight.title}: ${snap.insight.body}`
       : "No high-signal intervention yet.";
     sidebar.setContent([
-      "{bold}Prompt Sage{/bold}",
+      "{bold}prompt-sage{/bold}",
+      "{#7f8c98-fg}token-efficient agent communication{/}",
       status,
       "",
       ...sectionBlock("Trajectory", snap.trajectory || "Watching session.", contentWidth, 3),
@@ -409,7 +410,7 @@ async function main() {
   }
 
   if (typeof Bun === "undefined" || !Bun.spawn) {
-    console.error("prompt-sage sidecar requires Bun for PTY support.");
+    console.error(terminalUi.error("Sidecar requires Bun for PTY support."));
     process.exit(1);
   }
 
@@ -468,7 +469,7 @@ async function main() {
 const runningAsMain = typeof Bun !== "undefined" && import.meta.path === Bun.main;
 if (runningAsMain) {
   main().catch((err) => {
-    console.error(err.stack || err.message);
+    console.error(terminalUi.error(err.stack || err.message));
     process.exit(1);
   });
 }
