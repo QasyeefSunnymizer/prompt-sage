@@ -2,7 +2,10 @@ use anyhow::{anyhow, Context, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 use std::{
+    ffi::OsString,
     io::{Read, Write},
+    path::{Path, PathBuf},
+    process::Command,
     sync::mpsc::Sender,
     thread,
 };
@@ -28,8 +31,9 @@ impl HostedPty {
             })
             .context("open pty")?;
 
-        let mut builder = CommandBuilder::new(target);
-        for arg in &command[1..] {
+        let resolved = resolve_host_command(target, &command[1..]);
+        let mut builder = CommandBuilder::new(&resolved.program);
+        for arg in &resolved.args {
             builder.arg(arg);
         }
         builder.env(
@@ -91,6 +95,135 @@ impl HostedPty {
             Some(status) => Ok(Some(status.exit_code() as i32)),
             None => Ok(None),
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ResolvedCommand {
+    pub(crate) program: OsString,
+    pub(crate) args: Vec<OsString>,
+}
+
+pub(crate) fn resolve_host_command(target: &str, args: &[String]) -> ResolvedCommand {
+    #[cfg(windows)]
+    {
+        resolve_windows_command(target, args)
+    }
+    #[cfg(not(windows))]
+    {
+        ResolvedCommand {
+            program: OsString::from(target),
+            args: args.iter().map(OsString::from).collect(),
+        }
+    }
+}
+
+#[cfg(windows)]
+fn resolve_windows_command(target: &str, args: &[String]) -> ResolvedCommand {
+    let runnable = if has_path_separator(target) {
+        PathBuf::from(target)
+    } else {
+        find_windows_runnable(target).unwrap_or_else(|| PathBuf::from(target))
+    };
+    let ext = runnable
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+
+    if matches!(ext.as_str(), "cmd" | "bat") {
+        let mut command_args = Vec::with_capacity(args.len() + 4);
+        command_args.push(OsString::from("/d"));
+        command_args.push(OsString::from("/s"));
+        command_args.push(OsString::from("/c"));
+        command_args.push(cmd_command_line(&runnable, args));
+        return ResolvedCommand {
+            program: OsString::from(std::env::var("ComSpec").unwrap_or_else(|_| "cmd.exe".into())),
+            args: command_args,
+        };
+    }
+
+    ResolvedCommand {
+        program: runnable.into_os_string(),
+        args: args.iter().map(OsString::from).collect(),
+    }
+}
+
+#[cfg(windows)]
+fn has_path_separator(target: &str) -> bool {
+    target.contains('\\') || target.contains('/')
+}
+
+#[cfg(windows)]
+fn find_windows_runnable(target: &str) -> Option<PathBuf> {
+    let output = Command::new("where.exe")
+        .arg(target)
+        .output()
+        .ok()
+        .filter(|output| output.status.success())?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    select_windows_runnable(
+        stdout
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty()),
+    )
+}
+
+#[cfg(windows)]
+fn select_windows_runnable<'a>(matches: impl IntoIterator<Item = &'a str>) -> Option<PathBuf> {
+    let paths: Vec<PathBuf> = matches.into_iter().map(PathBuf::from).collect();
+    paths
+        .iter()
+        .find(|path| has_extension(path, "exe"))
+        .cloned()
+        .or_else(|| {
+            paths
+                .iter()
+                .find(|path| has_extension(path, "cmd"))
+                .cloned()
+        })
+        .or_else(|| {
+            paths
+                .iter()
+                .find(|path| has_extension(path, "bat"))
+                .cloned()
+        })
+        .or_else(|| {
+            paths
+                .iter()
+                .find(|path| has_extension(path, "com"))
+                .cloned()
+        })
+        .or_else(|| paths.first().cloned())
+}
+
+#[cfg(windows)]
+fn has_extension(path: &Path, expected: &str) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case(expected))
+        .unwrap_or(false)
+}
+
+#[cfg(windows)]
+fn cmd_command_line(runnable: &Path, args: &[String]) -> OsString {
+    let mut parts = Vec::with_capacity(args.len() + 1);
+    parts.push(quote_for_cmd(&runnable.to_string_lossy()));
+    parts.extend(args.iter().map(|arg| quote_for_cmd(arg)));
+    OsString::from(parts.join(" "))
+}
+
+#[cfg(windows)]
+fn quote_for_cmd(value: &str) -> String {
+    if !value.is_empty()
+        && value
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || "@%+=:,./\\-_".contains(ch))
+    {
+        value.to_string()
+    } else {
+        format!("\"{}\"", value.replace('"', "\\\""))
     }
 }
 
@@ -193,5 +326,38 @@ mod tests {
         assert_eq!(encode_key_for_pty(ctrl('q')), None);
         assert_eq!(encode_key_for_pty(ctrl(']')), None);
         assert_eq!(encode_key_for_pty(key(KeyCode::Tab)), None);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_selects_runnable_npm_cmd_shim() {
+        let selected = select_windows_runnable([
+            "C:\\Users\\qasye\\AppData\\Roaming\\npm\\codex",
+            "C:\\Users\\qasye\\AppData\\Roaming\\npm\\codex.cmd",
+        ])
+        .unwrap();
+        assert_eq!(
+            selected,
+            PathBuf::from("C:\\Users\\qasye\\AppData\\Roaming\\npm\\codex.cmd")
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_wraps_cmd_shims_with_comspec() {
+        let resolved = resolve_windows_command(
+            "C:\\Users\\qasye\\AppData\\Roaming\\npm\\codex.cmd",
+            &["--version".into()],
+        );
+        assert!(resolved
+            .program
+            .to_string_lossy()
+            .to_ascii_lowercase()
+            .ends_with("cmd.exe"));
+        assert_eq!(resolved.args[0], OsString::from("/d"));
+        assert_eq!(resolved.args[1], OsString::from("/s"));
+        assert_eq!(resolved.args[2], OsString::from("/c"));
+        assert!(resolved.args[3].to_string_lossy().contains("codex.cmd"));
+        assert!(resolved.args[3].to_string_lossy().contains("--version"));
     }
 }

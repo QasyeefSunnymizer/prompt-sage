@@ -13,7 +13,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use model::Snapshot;
-use pty::{encode_key_for_pty, key_text_for_analyzer, HostedPty};
+use pty::{encode_key_for_pty, key_text_for_analyzer, resolve_host_command, HostedPty};
 use ratatui::{backend::CrosstermBackend, layout::Rect, Terminal};
 use std::{
     env,
@@ -271,8 +271,9 @@ fn copy_osc52(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, text: &str)
 }
 
 fn run_plain(command: &[String]) -> Result<()> {
-    let mut child = Command::new(&command[0])
-        .args(&command[1..])
+    let resolved = resolve_host_command(&command[0], &command[1..]);
+    let mut child = Command::new(&resolved.program)
+        .args(&resolved.args)
         .stdin(Stdio::inherit())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
