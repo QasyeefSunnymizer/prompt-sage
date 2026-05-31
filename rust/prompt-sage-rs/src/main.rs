@@ -10,6 +10,7 @@ struct Cli {
     /// Mode command such as /sage, /sage roleplay, stop sage, self-update
     command: Option<String>,
     /// Input text to transform
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     text: Vec<String>,
     /// Print detected update command only
     #[arg(long)]
@@ -92,12 +93,12 @@ fn main() {
             return;
         }
 
-        let Some(tui_bin) = find_tui_bin() else {
+        let Some(tui_bin) = ensure_tui_bin() else {
             eprintln!(
                 "{}",
                 error(
                     "Run requires the Rust TUI binary.",
-                    Some("Run npm run build:tui, then rerun the command.")
+                    Some("Automatic build could not locate or produce prompt-sage-tui.")
                 )
             );
             std::process::exit(1);
@@ -189,6 +190,47 @@ fn find_tui_bin() -> Option<std::path::PathBuf> {
         );
         candidates.push(dir.join("tui").join("target").join("debug").join(&bin_name));
         candidates.push(dir.join("bin").join(&bin_name));
+    }
+
+    candidates.into_iter().find(|path| path.exists())
+}
+
+fn ensure_tui_bin() -> Option<std::path::PathBuf> {
+    if let Some(path) = find_tui_bin() {
+        return Some(path);
+    }
+    if std::env::var("PROMPT_SAGE_TUI_BIN").is_ok() {
+        return None;
+    }
+
+    let manifest = find_tui_manifest()?;
+    eprintln!(
+        "prompt-sage: Rust TUI binary missing; running cargo build --release --manifest-path {}...",
+        manifest.display()
+    );
+    let manifest_arg = manifest.to_string_lossy().to_string();
+    let status = Command::new("cargo")
+        .args(["build", "--release", "--manifest-path", &manifest_arg])
+        .status()
+        .ok()?;
+    if !status.success() {
+        return None;
+    }
+    find_tui_bin()
+}
+
+fn find_tui_manifest() -> Option<std::path::PathBuf> {
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+    let cwd = std::env::current_dir().ok();
+
+    let mut candidates = Vec::new();
+    if let Some(dir) = cwd {
+        candidates.push(dir.join("tui").join("Cargo.toml"));
+    }
+    if let Some(dir) = exe_dir {
+        candidates.push(dir.join("..").join("..").join("tui").join("Cargo.toml"));
     }
 
     candidates.into_iter().find(|path| path.exists())

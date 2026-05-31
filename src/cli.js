@@ -30,11 +30,37 @@ function findTuiBin() {
   return candidateTuiBins().find((candidate) => fs.existsSync(candidate));
 }
 
+function npmCommand() {
+  return "npm";
+}
+
+function buildTuiIfMissing() {
+  if (process.env.PROMPT_SAGE_TUI_BIN) return null;
+  const root = path.join(__dirname, "..");
+  console.error("prompt-sage: Rust TUI binary missing; running npm run build:tui...");
+  const result = spawnSync(npmCommand(), ["run", "build:tui"], {
+    cwd: root,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  });
+  if (result.error) {
+    return result.error.message;
+  }
+  if ((result.status ?? 1) !== 0) {
+    return `npm run build:tui exited with status ${result.status ?? 1}`;
+  }
+  return null;
+}
+
 function launchTui(rest) {
-  const tuiBin = findTuiBin();
+  let tuiBin = findTuiBin();
   if (!tuiBin) {
-    console.error(ui.error("Run requires the Rust TUI binary.", "Run npm run build:tui, then rerun the command."));
-    process.exit(1);
+    const buildError = buildTuiIfMissing();
+    tuiBin = findTuiBin();
+    if (!tuiBin) {
+      console.error(ui.error("Run requires the Rust TUI binary.", buildError || "Automatic build finished but no TUI binary was found."));
+      process.exit(1);
+    }
   }
   const result = spawnSync(tuiBin, rest, { stdio: "inherit" });
   if (result.error) {
