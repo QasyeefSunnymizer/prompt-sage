@@ -80,22 +80,34 @@ fn main() {
         return;
     }
 
-    if command.to_lowercase() == "sidecar" {
+    let command_lower = command.to_lowercase();
+    if command_lower == "run" || command_lower == "sidecar" {
         if cli.text.is_empty() {
-            println!("{}", sidecar_usage());
+            println!("{}", run_usage());
             return;
         }
 
-        let sidecar = find_sidecar_script();
-        let status = match Command::new("bun").arg(sidecar).args(&cli.text).status() {
+        if std::env::var("PROMPT_SAGE_TEST_ROUTE").ok().as_deref() == Some("1") {
+            println!("tui {}", cli.text.join(" "));
+            return;
+        }
+
+        let Some(tui_bin) = find_tui_bin() else {
+            eprintln!(
+                "{}",
+                error(
+                    "Run requires the Rust TUI binary.",
+                    Some("Run npm run build:tui, then rerun the command.")
+                )
+            );
+            std::process::exit(1);
+        };
+        let status = match Command::new(tui_bin).args(&cli.text).status() {
             Ok(status) => status,
             Err(err) => {
                 eprintln!(
                     "{}",
-                    error(
-                        &format!("Sidecar requires Bun and the JS sidecar files: {}", err),
-                        None
-                    )
+                    error(&format!("Failed to launch Rust TUI: {}", err), None)
                 );
                 std::process::exit(1);
             }
@@ -133,34 +145,53 @@ fn main() {
     }
 }
 
-fn find_sidecar_script() -> std::path::PathBuf {
+fn find_tui_bin() -> Option<std::path::PathBuf> {
+    if let Ok(path) = std::env::var("PROMPT_SAGE_TUI_BIN") {
+        let path = std::path::PathBuf::from(path);
+        if path.exists() {
+            return Some(path);
+        }
+    }
+
     let exe_dir = std::env::current_exe()
         .ok()
         .and_then(|p| p.parent().map(|p| p.to_path_buf()));
     let cwd = std::env::current_dir().ok();
+    let exe = if cfg!(windows) { ".exe" } else { "" };
+    let bin_name = format!("prompt-sage-tui{}", exe);
 
     let mut candidates = Vec::new();
     if let Some(dir) = exe_dir {
-        candidates.push(dir.join("src").join("sidecar").join("cli.mjs"));
-        candidates.push(dir.join("..").join("src").join("sidecar").join("cli.mjs"));
+        candidates.push(dir.join(&bin_name));
         candidates.push(
             dir.join("..")
                 .join("..")
+                .join("tui")
+                .join("target")
+                .join("release")
+                .join(&bin_name),
+        );
+        candidates.push(
+            dir.join("..")
                 .join("..")
-                .join("..")
-                .join("src")
-                .join("sidecar")
-                .join("cli.mjs"),
+                .join("tui")
+                .join("target")
+                .join("debug")
+                .join(&bin_name),
         );
     }
     if let Some(dir) = cwd {
-        candidates.push(dir.join("src").join("sidecar").join("cli.mjs"));
+        candidates.push(
+            dir.join("tui")
+                .join("target")
+                .join("release")
+                .join(&bin_name),
+        );
+        candidates.push(dir.join("tui").join("target").join("debug").join(&bin_name));
+        candidates.push(dir.join("bin").join(&bin_name));
     }
 
-    candidates
-        .into_iter()
-        .find(|path| path.exists())
-        .unwrap_or_else(|| std::path::PathBuf::from("src/sidecar/cli.mjs"))
+    candidates.into_iter().find(|path| path.exists())
 }
 
 const BRAND: &str = "prompt-sage";
@@ -223,10 +254,7 @@ fn usage() -> String {
             "transform",
             &format!("prompt-sage \"/sage [{}]\" \"text\"", LEVELS),
         ),
-        row(
-            "sidecar",
-            "prompt-sage sidecar <claude|codex|command> [args...]",
-        ),
+        row("run", "prompt-sage run <claude|codex|command> [args...]"),
         row("update", "prompt-sage self-update [--dry-run]"),
         "".to_string(),
         label("Modes"),
@@ -236,20 +264,17 @@ fn usage() -> String {
     lines.join("\n")
 }
 
-fn sidecar_usage() -> String {
+fn run_usage() -> String {
     let mut lines = header();
     lines.extend([
         "".to_string(),
-        label("Sidecar"),
-        row(
-            "run",
-            "prompt-sage sidecar <claude|codex|command> [args...]",
-        ),
+        label("Run"),
+        row("run", "prompt-sage run <claude|codex|command> [args...]"),
         row(
             "ui",
-            "split PTY wrapper with Prompt Sage analysis docked right",
+            "Ratatui PTY wrapper with Prompt Sage analysis docked right",
         ),
-        row("debug", "PROMPT_SAGE_NO_UI=1 disables the split wrapper"),
+        row("debug", "PROMPT_SAGE_NO_UI=1 disables the wrapper"),
     ]);
     lines.join("\n")
 }

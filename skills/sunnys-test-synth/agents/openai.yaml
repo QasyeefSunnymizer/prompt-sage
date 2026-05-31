@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sunny's Test Synth"
+  short_description: "Run project verification before completion."
+  default_prompt: "Use Sunny's Test Synth to identify needed verification, inform Sunny, run the checks yourself, and report evidence."

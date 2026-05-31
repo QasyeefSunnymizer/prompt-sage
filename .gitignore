@@ -21,6 +21,8 @@ tmp/
 temp/
 graphify-out/
 rust/prompt-sage-rs/target/
+panel/target/
+tui/target/
 
 # OS/editor noise
 .DS_Store

@@ -7,9 +7,11 @@
     "prompt-sage": "src/cli.js"
   },
   "scripts": {
-    "build:rust": "cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml",
+    "build:rust": "cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml && cargo build --release --manifest-path tui/Cargo.toml",
+    "build:tui": "cargo build --release --manifest-path tui/Cargo.toml",
+    "build:panel": "npm run build:tui",
     "test": "node --test && npm run test:rust",
-    "test:rust": "cargo test --manifest-path rust/prompt-sage-rs/Cargo.toml",
+    "test:rust": "cargo test --manifest-path rust/prompt-sage-rs/Cargo.toml && cargo test --manifest-path tui/Cargo.toml",
     "sage": "cargo run --quiet --manifest-path rust/prompt-sage-rs/Cargo.toml --",
     "demo:sage": "node scripts/demo-sage.js",
     "stats:sage:internal": "node scripts/stats-sage.js"

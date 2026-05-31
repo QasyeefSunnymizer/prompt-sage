@@ -1,0 +1,21 @@
+[package]
+name = "prompt-sage-tui"
+version = "0.2.1"
+edition = "2021"
+license = "MIT"
+description = "Prompt Sage split-screen PTY TUI"
+
+[[bin]]
+name = "prompt-sage-tui"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.86"
+base64 = "0.22.1"
+crossterm = "0.28.1"
+portable-pty = "0.8.1"
+ratatui = "0.29.0"
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
+tui-term = "0.2.0"
+vt100 = "0.15.2"
