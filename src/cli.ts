@@ -7,6 +7,8 @@ import { OllamaProvider } from "./providers/ollama.ts"
 import { ClaudeProvider } from "./providers/claude.ts"
 import { CodexProvider } from "./providers/codex.ts"
 import { doctor, probe } from "./diagnostics.ts"
+import { compareText, parseLevels } from "./compare.ts"
+import { listProjectSkills } from "./skills.ts"
 import type { Provider } from "./providers/base.ts"
 import type { PermissionGate } from "./agent/tools.ts"
 import * as readline from "node:readline"
@@ -74,6 +76,32 @@ if (cmd === "probe") {
   const icon = entry.status === "ok" ? "✓" : "✗"
   console.log(`${icon} ${entry.name}: ${entry.detail}`)
   process.exit(entry.status === "ok" ? 0 : 1)
+}
+
+if (cmd === "compare") {
+  const levelsFlag = rest.findIndex(a => a === "--levels")
+  const levelsRaw = levelsFlag >= 0 ? rest[levelsFlag + 1] : null
+  const levels = parseLevels(levelsRaw)
+  const text = rest.filter((_, i) => levelsFlag < 0 || (i !== levelsFlag && i !== levelsFlag + 1)).join(" ")
+  if (!text) {
+    console.error("usage: prompt-sage compare [--levels lite,full,ultra] <text>")
+    process.exit(1)
+  }
+  const rows = compareText(text, levels)
+  for (const row of rows) {
+    console.log(`${row.level.padEnd(10)} ${row.delta > 0 ? "+" : ""}${row.delta} chars  ${row.text.slice(0, 80)}`)
+  }
+  process.exit(0)
+}
+
+if (cmd === "skills") {
+  const skills = listProjectSkills()
+  if (!skills.length) {
+    console.log("No skills found. Add skills/ directory with SKILL.md files.")
+  } else {
+    for (const s of skills) console.log(`${s.name.padEnd(20)} ${s.path}`)
+  }
+  process.exit(0)
 }
 
 // Default: start agent TUI
