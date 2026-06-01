@@ -1,4 +1,4 @@
-import { LEVELS, transformText } from "./style-engine.js"
+import { LEVELS, transformText } from "./style-engine.ts"
 
 export type ParseResult =
   | { type: "start"; active: true; level: string }
