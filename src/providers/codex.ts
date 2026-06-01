@@ -2,14 +2,14 @@ import OpenAI from "openai"
 import type { Provider, Message, ToolDef, Delta } from "./base.ts"
 import { streamOpenAI } from "./openai-stream.ts"
 
-export class OllamaProvider implements Provider {
-  readonly name = "ollama"
+export class CodexProvider implements Provider {
+  readonly name = "codex"
   readonly model: string
   private client: OpenAI
 
-  constructor(model: string, baseURL = "http://localhost:11434/v1") {
+  constructor(model = "gpt-4o") {
     this.model = model
-    this.client = new OpenAI({ baseURL, apiKey: "ollama" })
+    this.client = new OpenAI() // reads OPENAI_API_KEY from env
   }
 
   stream(messages: Message[], tools: ToolDef[]): AsyncIterable<Delta> {
