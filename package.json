@@ -1,34 +1,28 @@
 {
   "name": "prompt-sage",
-  "version": "0.2.1",
-  "description": "Prompt Sage, token-efficient communication mode for coding agents.",
-  "main": "src/index.js",
+  "version": "0.3.0",
+  "description": "Prompt Sage — token-efficient coding agent.",
+  "type": "module",
   "bin": {
-    "prompt-sage": "src/cli.js"
+    "prompt-sage": "src/cli.ts"
   },
   "scripts": {
-    "build:rust": "cargo build --release --manifest-path rust/prompt-sage-rs/Cargo.toml && cargo build --release --manifest-path tui/Cargo.toml",
-    "build:tui": "cargo build --release --manifest-path tui/Cargo.toml",
-    "build:panel": "npm run build:tui",
-    "test": "node --test && npm run test:rust",
-    "test:rust": "cargo test --manifest-path rust/prompt-sage-rs/Cargo.toml && cargo test --manifest-path tui/Cargo.toml",
-    "sage": "cargo run --quiet --manifest-path rust/prompt-sage-rs/Cargo.toml --",
-    "demo:sage": "node scripts/demo-sage.js",
-    "stats:sage:internal": "node scripts/stats-sage.js"
+    "test": "bun test",
+    "dev": "bun run src/cli.ts",
+    "start": "bun run src/cli.ts"
   },
-  "keywords": [
-    "sage",
-    "agent",
-    "prompting",
-    "token-efficiency"
-  ],
+  "keywords": ["sage", "agent", "prompting", "token-efficiency"],
   "author": "",
   "license": "MIT",
-  "type": "commonjs",
   "dependencies": {
-    "@homebridge/node-pty-prebuilt-multiarch": "^0.13.1",
-    "blessed": "^0.1.81",
-    "tiktoken": "^1.0.22",
-    "xterm-headless": "^5.3.0"
+    "@anthropic-ai/sdk": "^0.30.0",
+    "ink": "^5.0.0",
+    "openai": "^4.0.0",
+    "react": "^18.3.0",
+    "tiktoken": "^1.0.22"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "typescript": "^5.4.0"
   }
 }
