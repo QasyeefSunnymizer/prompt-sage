@@ -7,18 +7,18 @@ const skip = process.env.PROMPT_SAGE_SKIP_OLLAMA === "1"
 
 describe("OllamaProvider", () => {
   test("constructs with defaults", () => {
-    const p = new OllamaProvider("llama3.2")
+    const p = new OllamaProvider("qwen3:8b-q8_0")
     expect(p.name).toBe("ollama")
-    expect(p.model).toBe("llama3.2")
+    expect(p.model).toBe("qwen3:8b-q8_0")
   })
 
   test.skipIf(skip)("streams a text response from Ollama", async () => {
-    const p = new OllamaProvider("llama3.2")
+    const p = new OllamaProvider("qwen3:8b-q8_0")
     let got = ""
     for await (const d of p.stream([{ role: "user", content: "Say: hello" }], [])) {
       if (d.type === "text") got += d.text
       if (d.type === "done") break
     }
     expect(got.length).toBeGreaterThan(0)
-  })
+  }, 60000)
 })
