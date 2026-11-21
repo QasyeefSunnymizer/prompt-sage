@@ -13,31 +13,32 @@ Keep technical truth. Cut fluff.
 
 ## Quick Start
 
-### Option A: Package Managers
+### Option A: Download a release binary
 
-| Platform | Command |
+Grab the latest build from the [Releases page](https://github.com/QasyeefSunnymizer/prompt-sage/releases/latest).
+
+| Platform | Asset |
 | --- | --- |
-| Windows | `winget install prompt-sage` |
-| Windows (alt) | `choco install prompt-sage` |
-| macOS | `brew install prompt-sage/tap/prompt-sage` |
-| Linux (Debian/Ubuntu) | `sudo apt install prompt-sage` |
-| Linux (Fedora/RHEL) | `sudo dnf install prompt-sage` |
+| Linux (x64) | `prompt-sage-rs-linux-x64` |
+| macOS (x64) | `prompt-sage-rs-macos-x64` |
+| Windows (x64) | `prompt-sage-rs-windows-x64.exe` |
 
-### Option B: Universal curl Fallback
-
-Fast path:
+On Linux or macOS, make it executable and put it on your `PATH`:
 
 ```bash
-curl -fsSL https://example.com/prompt-sage/install.sh | bash
+chmod +x prompt-sage-rs-linux-x64
+mv prompt-sage-rs-linux-x64 ~/.local/bin/prompt-sage
 ```
 
-Safer inspect-first path:
+### Option B: Source archive
+
+Each release also ships `prompt-sage-vX.Y.Z.tar.gz` with a matching `.sha256` file. Verify before use:
 
 ```bash
-curl -fsSL https://example.com/prompt-sage/install.sh -o install.sh
-less install.sh
-bash install.sh
+sha256sum -c prompt-sage-vX.Y.Z.tar.gz.sha256
 ```
+
+> Package-manager manifests (winget, Chocolatey, Homebrew, Linux) live in `packaging/` but are **not published yet**, so `winget`/`brew`/`apt` installs will not work for now.
 
 ![Hand-drawn install decision flowchart](docs/images/install-decision-map.png)
 
@@ -141,15 +142,7 @@ The release workflow validates the tag/version match, runs tests, builds the sou
 
 ## Updating Existing Installs
 
-Preferred: use your package manager auto-update policy.
-
-- Windows (`winget`): `winget upgrade prompt-sage`
-- Windows (`choco`): `choco upgrade prompt-sage`
-- macOS (`brew`): `brew update && brew upgrade prompt-sage`
-- Debian/Ubuntu (`apt`): `sudo apt update && sudo apt install --only-upgrade prompt-sage`
-- Fedora/RHEL (`dnf`): `sudo dnf upgrade prompt-sage`
-
-Unified helper command:
+Re-download the newest binary from the [Releases page](https://github.com/QasyeefSunnymizer/prompt-sage/releases/latest), or use the helper command:
 
 ```bash
 prompt-sage self-update
